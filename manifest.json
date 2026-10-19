@@ -3,7 +3,14 @@
   "id": "tau.upload-github",
   "name": "GitHub 资源上传",
   "description": "将图片与附件上传到GitHub并返回可引用的资源地址。",
-  "version": "0.1.1",
+  "categories": [
+    "upload"
+  ],
+  "keywords": [
+    "GitHub",
+    "图床"
+  ],
+  "version": "0.1.2",
   "minAppVersion": "0.59.0",
   "apiVersion": 1,
   "platform": "desktop",
