@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { definePlugin, type PluginSettingsProps } from "@tau/plugins";
-import { Button, Input } from "@tau/ui";
+import { Button, Input, SettingRow } from "@tau/ui";
 import { upload, validate } from "./upload";
-import "./styles.css";
+
 declare const __PLUGIN_META__: { id: string; name: string; version: string };
+
 const fields: readonly (readonly [string, string, string?])[] = [
   ["token", "访问令牌", "password"],
   ["owner", "仓库所有者"],
@@ -25,7 +26,9 @@ function Settings({ uploadConfig, context }: PluginSettingsProps) {
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+
   if (!uploadConfig) return <p>请在资源存储设置中配置。</p>;
+
   const save = async () => {
     setSaving(true);
     setMessage("");
@@ -41,29 +44,39 @@ function Settings({ uploadConfig, context }: PluginSettingsProps) {
       if (!context.signal.aborted) setSaving(false);
     }
   };
+
   return (
-    <div className="tau-upload-settings">
+    <>
       {fields.map(([key, label, type]) => (
-        <label key={key}>
-          <span>{label}</span>
+        <SettingRow key={key} title={label}>
           <Input
+            className="w-[260px]"
             aria-label={label}
             type={type ?? "text"}
             value={form[key] ?? ""}
             autoComplete="off"
-            onChange={(event) =>
-              setForm((value) => ({ ...value, [key]: event.target.value }))
-            }
+            onChange={event => setForm(prev => ({ ...prev, [key]: event.target.value }))}
           />
-        </label>
+        </SettingRow>
       ))}
-
-      <p>返回的资源地址须能公开访问；插件不会自动修改桶或仓库权限。</p>
-      <Button loading={saving} onClick={() => void save()}>
-        保存并使用
-      </Button>
-      <p role="status">{message}</p>
-    </div>
+      <SettingRow title="">
+        <p className="text-ink-2 text-tau-sm">
+          返回的资源地址须能公开访问；插件不会自动修改桶或仓库权限。
+        </p>
+      </SettingRow>
+      <SettingRow title="">
+        <Button loading={saving} onClick={() => void save()}>
+          保存并使用
+        </Button>
+      </SettingRow>
+      {message && (
+        <SettingRow title="">
+          <p role="status" className="text-ink-2 text-tau-sm">
+            {message}
+          </p>
+        </SettingRow>
+      )}
+    </>
   );
 }
 
@@ -74,13 +87,23 @@ export default definePlugin({
       context.upload.register({
         id: context.pluginId,
         name: __PLUGIN_META__.name,
-        upload: (file, config, signal?: AbortSignal) => upload((input, init) => {
-          const sourceSignal = init?.signal ?? (input instanceof Request ? input.signal : undefined);
-          return context.fetch(input, {
-            ...init,
-            signal: AbortSignal.any([context.signal, ...(signal ? [signal] : []), ...(sourceSignal ? [sourceSignal] : [])]),
-          });
-        }, file, config),
+        upload: (file, config, signal?: AbortSignal) =>
+          upload(
+            (input, init) => {
+              const sourceSignal =
+                init?.signal ?? (input instanceof Request ? input.signal : undefined);
+              return context.fetch(input, {
+                ...init,
+                signal: AbortSignal.any([
+                  context.signal,
+                  ...(signal ? [signal] : []),
+                  ...(sourceSignal ? [sourceSignal] : []),
+                ]),
+              });
+            },
+            file,
+            config
+          ),
       });
       context.settings.register({
         id: "upload",
