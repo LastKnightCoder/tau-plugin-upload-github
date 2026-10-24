@@ -4,17 +4,16 @@
   "description": "将图片与附件上传到GitHub并返回可引用的资源地址。",
   "categories": ["upload"],
   "keywords": ["GitHub", "图床"],
-  "version": "0.3.0",
-  "requires": ["fetch", "upload"],
+  "version": "0.3.1",
   "targets": {
     "desktop": {
-      "minAppVersion": "0.59.2"
+      "minAppVersion": "0.59.4"
     },
     "android": {
-      "minAppVersion": "0.2.3"
+      "minAppVersion": "0.2.4"
     },
     "ios": {
-      "minAppVersion": "0.2.3"
+      "minAppVersion": "0.2.4"
     }
   }
 }
