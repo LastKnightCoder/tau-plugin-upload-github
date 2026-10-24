@@ -4,7 +4,7 @@
   "description": "将图片与附件上传到GitHub并返回可引用的资源地址。",
   "categories": ["upload"],
   "keywords": ["GitHub", "图床"],
-  "version": "0.3.1",
+  "version": "0.3.2",
   "targets": {
     "desktop": {
       "minAppVersion": "0.59.4"
