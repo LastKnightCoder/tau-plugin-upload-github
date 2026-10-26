@@ -1,100 +1,8 @@
-import { MobileSettings } from "./mobile-settings";
-import { useState } from "react";
-import { definePlugin, usePluginEnvironment, type PluginSettingsProps } from "@tau/plugins";
-import { Button, Input, SettingRow } from "@tau/ui";
+import { definePlugin } from "@tau/plugins";
 import { upload, validate } from "./upload";
+import { createGithubForm } from "./form";
 
 declare const __PLUGIN_META__: { id: string; name: string; version: string };
-
-const fields: readonly (readonly [string, string, string?])[] = [
-  ["token", "访问令牌", "password"],
-  ["owner", "仓库所有者"],
-  ["repo", "仓库"],
-  ["branch", "分支"],
-  ["email", "提交邮箱（可选）"],
-  ["pathPrefix", "路径前缀（可选）"],
-  ["publicBaseUrl", "公开地址前缀（可选）"],
-];
-
-function Settings({ uploadConfig, context }: PluginSettingsProps) {
-  const [form, setForm] = useState<Record<string, string>>(() => {
-    const value = uploadConfig?.value;
-    const initial: Record<string, string> = {};
-    if (value && typeof value === "object" && !Array.isArray(value))
-      for (const [key, item] of Object.entries(value))
-        if (typeof item === "string") initial[key] = item;
-    return initial;
-  });
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-
-  if (!uploadConfig) return <p>请在资源存储设置中配置。</p>;
-
-  const save = async () => {
-    setSaving(true);
-    setMessage("");
-    try {
-      validate(form);
-      context.signal.throwIfAborted();
-      await uploadConfig.save({
-        ...(uploadConfig.value &&
-        typeof uploadConfig.value === "object" &&
-        !Array.isArray(uploadConfig.value)
-          ? uploadConfig.value
-          : {}),
-        ...form,
-      });
-      if (!context.signal.aborted) setMessage("已保存并选为上传目标");
-    } catch (error) {
-      if (!context.signal.aborted) setMessage(error instanceof Error ? error.message : "保存失败");
-    } finally {
-      if (!context.signal.aborted) setSaving(false);
-    }
-  };
-
-  return (
-    <>
-      {fields.map(([key, label, type]) => (
-        <SettingRow key={key} title={label}>
-          <Input
-            className="w-[260px]"
-            aria-label={label}
-            type={type ?? "text"}
-            value={form[key] ?? ""}
-            autoComplete="off"
-            onChange={event => setForm(prev => ({ ...prev, [key]: event.target.value }))}
-          />
-        </SettingRow>
-      ))}
-      <SettingRow title="">
-        <p className="text-ink-2 text-tau-sm">
-          返回的资源地址须能公开访问；插件不会自动修改桶或仓库权限。
-        </p>
-      </SettingRow>
-      <SettingRow title="">
-        <Button loading={saving} onClick={() => void save()}>
-          保存并使用
-        </Button>
-      </SettingRow>
-      {message && (
-        <SettingRow title="">
-          <p role="status" className="text-ink-2 text-tau-sm">
-            {message}
-          </p>
-        </SettingRow>
-      )}
-    </>
-  );
-}
-
-function SettingsView(props: PluginSettingsProps) {
-  const environment = usePluginEnvironment();
-  return environment.platform === "desktop" ? (
-    <Settings {...props} />
-  ) : (
-    <MobileSettings {...props} />
-  );
-}
 
 export default definePlugin({
   ...__PLUGIN_META__,
@@ -125,7 +33,17 @@ export default definePlugin({
         id: "upload",
         title: __PLUGIN_META__.name,
         target: "upload",
-        component: SettingsView,
+        form: (() => {
+          const form = createGithubForm(context.fetch, { pathPlaceholder: "uploads", upload: true });
+          return {
+            ...form,
+            beforeSave: async (values, signal) => {
+              const prepared = await form.beforeSave!(values, signal);
+              validate(prepared);
+              return prepared;
+            },
+          };
+        })(),
       });
     },
   }),
