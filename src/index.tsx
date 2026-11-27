@@ -1,3 +1,4 @@
+import { messages } from "./i18n";
 import { definePlugin } from "@tau/plugins";
 import { upload, validate } from "./upload";
 import { createGithubForm } from "./form";
@@ -6,6 +7,7 @@ declare const __PLUGIN_META__: { id: string; name: string; version: string };
 
 export default definePlugin({
   ...__PLUGIN_META__,
+  i18n: messages,
   create: () => ({
     activate(context) {
       context.upload.register({
@@ -34,7 +36,10 @@ export default definePlugin({
         title: __PLUGIN_META__.name,
         target: "upload",
         form: (() => {
-          const form = createGithubForm(context.fetch, { pathPlaceholder: "uploads", upload: true });
+          const form = createGithubForm(context.fetch, {
+            pathPlaceholder: "uploads",
+            upload: true,
+          });
           return {
             ...form,
             beforeSave: async (values, signal) => {

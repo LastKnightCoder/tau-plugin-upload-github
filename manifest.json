@@ -4,16 +4,29 @@
   "description": "将图片与附件上传到GitHub并返回可引用的资源地址。",
   "categories": ["upload"],
   "keywords": ["GitHub", "图床"],
-  "version": "0.3.4",
+  "locales": ["zh-CN", "zh-TW", "en-US"],
+  "i18n": {
+    "zh-TW": {
+      "name": "GitHub 資源上傳",
+      "description": "將圖片與附件上傳到 GitHub 並回傳可引用的資源網址。",
+      "keywords": ["GitHub", "圖床"]
+    },
+    "en-US": {
+      "name": "GitHub Asset Upload",
+      "description": "Upload images and attachments to GitHub and return usable asset URLs.",
+      "keywords": ["GitHub", "image hosting", "upload"]
+    }
+  },
+  "version": "0.3.5",
   "targets": {
     "desktop": {
-      "minAppVersion": "0.60.2"
+      "minAppVersion": "0.68.0"
     },
     "android": {
-      "minAppVersion": "0.2.9"
+      "minAppVersion": "0.6.0"
     },
     "ios": {
-      "minAppVersion": "0.2.9"
+      "minAppVersion": "0.6.0"
     }
   }
 }
